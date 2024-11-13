@@ -1,4 +1,3 @@
-
 from requests import Session, RequestException
 from time import sleep, time
 from datetime import datetime, timedelta
@@ -19,9 +18,6 @@ authorizations = []
 telegram_bot_token = "6751513253:AAFDosTu2MaLPa3NjAUUa0EJ8pwPjeOdMOc"  
 chat_id = "6177500390"  
 
-def get_current_time() -> str:
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
 def send_telegram_message(message: str):
     url = f"https://api.telegram.org/bot{telegram_bot_token}/sendMessage"
     data = {
@@ -31,7 +27,7 @@ def send_telegram_message(message: str):
     try:
         requests.post(url, json=data)
     except RequestException as e:
-        print(f"{Colors.RED}[{get_current_time()}] Failed to send Telegram message. Error: {str(e)}{Colors.RESET}")
+        print(f"{Colors.RED}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Failed to send Telegram message. Error: {str(e)}{Colors.RESET}")
 
 def check_token_validity(token: str) -> bool:
     url = "https://api.hamsterkombatgame.io/interlude/upgrades-for-buy"
@@ -45,7 +41,7 @@ def check_token_validity(token: str) -> bool:
 def get_authorizations() -> List[str]:
     if not authorizations:
         while True:
-            auth_token = input(f"{Colors.GREEN}[{get_current_time()}] Enter Authorization Token (or type 'done' to finish): {Colors.RESET}")
+            auth_token = input(f"{Colors.GREEN}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Enter Authorization Token (or type 'done' to finish): {Colors.RESET}")
             if auth_token.lower() == 'done':
                 break
             if check_token_validity(auth_token):
@@ -59,10 +55,10 @@ def wait_for_cooldown(cooldown_seconds: int):
     while cooldown_seconds > 0:
         hours, remainder = divmod(cooldown_seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
-        print(f"{Colors.YELLOW}[{get_current_time()}] Waiting {hours}h {minutes}m {seconds}s until next upgrade...{Colors.RESET}", end='\r')
+        print(f"{Colors.YELLOW}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Waiting {hours}h {minutes}m {seconds}s until next upgrade...{Colors.RESET}", end='\r')
         sleep(1)
         cooldown_seconds -= 1
-    print(f"\n{Colors.CYAN}[{get_current_time()}] Cooldown over. Ready for next purchase at {end_time.strftime('%Y-%m-%d %H:%M:%S')}{Colors.RESET}")
+    print(f"\n{Colors.CYAN}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Cooldown over. Ready for next purchase at {end_time.strftime('%Y-%m-%d %H:%M:%S')}{Colors.RESET}")
 
 def format_number(number: int) -> str:
     if number >= 1_000_000:
@@ -73,10 +69,10 @@ def format_number(number: int) -> str:
         return str(number)
 
 def get_user_choice() -> str:
-    print(f"{Colors.CYAN}[{get_current_time()}] Choose mode:{Colors.RESET}")
+    print(f"{Colors.CYAN}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Choose mode:{Colors.RESET}")
     print(f"{Colors.YELLOW}1. Buy the best card immediately (skip cooldown waiting){Colors.RESET}")
     print(f"{Colors.YELLOW}2. Buy only the best card and wait for cooldown{Colors.RESET}")
-    choice = input(f"{Colors.GREEN}[{get_current_time()}] Enter your choice (1 or 2): {Colors.RESET}")
+    choice = input(f"{Colors.GREEN}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Enter your choice (1 or 2): {Colors.RESET}")
     return choice.strip()
 
 def purchase_upgrade(session: Session, authorization: str, upgrade_id: int) -> bool:
@@ -89,11 +85,11 @@ def purchase_upgrade(session: Session, authorization: str, upgrade_id: int) -> b
     try:
         response = session.post(url, headers=headers, json=data, timeout=10)
         response.raise_for_status()
-        print(f"{Colors.GREEN}[{get_current_time()}] Upgrade successfully purchased!{Colors.RESET}")
+        print(f"{Colors.GREEN}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Upgrade successfully purchased!{Colors.RESET}")
         send_telegram_message(f"Upgrade successfully purchased for token ending in {authorization[-6:]}.")
         return True
     except RequestException as e:
-        print(f"{Colors.RED}[{get_current_time()}] Failed to purchase upgrade. Error: {str(e)}{Colors.RESET}")
+        print(f"{Colors.RED}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Failed to purchase upgrade. Error: {str(e)}{Colors.RESET}")
         return False
 
 def get_upgrades(session: Session, authorization: str) -> List[Dict[str, Any]]:
@@ -104,7 +100,7 @@ def get_upgrades(session: Session, authorization: str) -> List[Dict[str, Any]]:
         response.raise_for_status()
         return response.json().get("upgradesForBuy", [])
     except RequestException as e:
-        print(f"{Colors.RED}[{get_current_time()}] Failed to retrieve upgrades. Error: {str(e)}{Colors.RESET}")
+        print(f"{Colors.RED}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Failed to retrieve upgrades. Error: {str(e)}{Colors.RESET}")
         return []
 
 def filter_upgrades(upgrades: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -120,13 +116,13 @@ def main():
         print(f"{Colors.RED}No authorization tokens entered. Exiting...{Colors.RESET}")
         return
 
-    min_balance = float(input(f"{Colors.YELLOW}[{get_current_time()}] Set minimum balance to stop purchasing (just for reference): {Colors.RESET}"))
+    min_balance = float(input(f"{Colors.YELLOW}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Set minimum balance to stop purchasing (just for reference): {Colors.RESET}"))
     user_choice = get_user_choice()
 
     while True: 
         with Session() as session:
             for authorization in authorizations:
-                print(f"{Colors.BLUE}[{get_current_time()}] Starting process for account with token [{authorization[-6:]}] {Colors.RESET}")
+                print(f"{Colors.BLUE}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Starting process for account with token [{authorization[-6:]}] {Colors.RESET}")
                 send_telegram_message(f"Starting process for account with token ending in {authorization[-6:]}.")
 
                 while True:
@@ -136,32 +132,31 @@ def main():
                     purchased = False
 
                     for upgrade in sorted_upgrades:
-                        print(f"{Colors.GREEN}[{get_current_time()}] Checking Upgrade: {Colors.YELLOW}{upgrade['name']} (ID: {upgrade['id']}, Price: {format_number(upgrade['price'])}){Colors.RESET}")
+                        print(f"{Colors.GREEN}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Checking Upgrade: {Colors.YELLOW}{upgrade['name']} (ID: {upgrade['id']}, Price: {format_number(upgrade['price'])}){Colors.RESET}")
 
                         cooldown_seconds = upgrade.get("cooldownSeconds", 4)
 
                         if cooldown_seconds > 0:
                             if user_choice == "1":
-                                print(f"{Colors.PURPLE}[{get_current_time()}] Upgrade {upgrade['name']} is on cooldown, skipping...{Colors.RESET}")
+                                print(f"{Colors.PURPLE}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Upgrade {upgrade['name']} is on cooldown, skipping...{Colors.RESET}")
                                 continue
                             elif user_choice == "2":
-                                print(f"{Colors.YELLOW}[{get_current_time()}] Upgrade {upgrade['name']} is on cooldown. Waiting for {cooldown_seconds} seconds...{Colors.RESET}")
+                                print(f"{Colors.YELLOW}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Upgrade {upgrade['name']} is on cooldown. Waiting for {cooldown_seconds} seconds...{Colors.RESET}")
                                 wait_for_cooldown(cooldown_seconds)
 
                         if purchase_upgrade(session, authorization, upgrade["id"]):
-                            print(f"{Colors.GREEN}[{get_current_time()}] Successfully purchased: {upgrade['name']} (ID: {upgrade['id']}){Colors.RESET}")
+                            print(f"{Colors.GREEN}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Successfully purchased: {upgrade['name']} (ID: {upgrade['id']}){Colors.RESET}")
                             purchased = True
-                            sleep(random.randint(7, 24))  # Wait between purchases
                             break
 
                     if not purchased:
-                        print(f"{Colors.RED}[{get_current_time()}] No valid upgrades available for account [{authorization[-6:]}...]. Moving to the next account...{Colors.RESET}")
+                        print(f"{Colors.RED}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] No valid upgrades available for account [{authorization[-6:]}...]. Moving to the next account...{Colors.RESET}")
                         break  
-                wait_time = random.randint(9, 25)
-                print(f"{Colors.CYAN}[{get_current_time()}] Waiting {wait_time}s before the next account...{Colors.RESET}")
+                wait_time = random.randint(7, 24)
+                print(f"{Colors.CYAN}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Waiting {wait_time}s before the next upgrade...{Colors.RESET}")
                 sleep(wait_time)
 
-            print(f"{Colors.CYAN}[{get_current_time()}] Completed processing all accounts. Waiting for 2 hours before restarting...{Colors.RESET}")
+            print(f"{Colors.CYAN}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Completed processing all accounts. Waiting for 2 hours before restarting...{Colors.RESET}")
             send_telegram_message("Completed processing all accounts. Waiting for 2 hours before restarting.")
             sleep(2 * 3600)  
 
